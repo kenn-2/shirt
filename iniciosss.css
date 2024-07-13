@@ -1,0 +1,36 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background: url('https://firebasestorage.googleapis.com/v0/b/cine-a9707.appspot.com/o/Captura%20de%20pantalla%202024-07-12%20211235.png?alt=media&token=c29487a7-e8a5-4a0e-8449-0b407c74b85f') no-repeat center center fixed;
+    background-size: cover; 
+    margin: 0;
+    padding: 0;
+}
+.container {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+    padding-top: 100px;
+}
+h1 {
+    font-size: 3em;
+    color: #333;
+}
+p {
+    font-size: 1.2em;
+    color: #666;
+}
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #023535;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+    margin-right: 10px;
+}
+.btn:hover {
+    background-color: #0056b3;
+}

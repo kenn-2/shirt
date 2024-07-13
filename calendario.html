@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/calendario.css">
+    <title>Calendario con Tareas y Asuntos - Campus Digital</title>
+
+</head>
+<body>
+    <header>
+        <h1><img src="" alt="Logo"></h1>
+        <nav>
+            <a href="inicio.html" >Inicio</a>
+            <a href="cursos.html">Cursos</a>
+            <a href="perfil.html">Perfil</a>
+            <a href="calendario.html">Calendario</a>
+        </nav>
+    
+    </header>
+    <div class="calendar-container">
+        <div class="calendar">
+            <div class="calendar-header">
+                <button id="prev-month">&lt;</button>
+                <h2 id="month-year">Enero 2024</h2>
+                <button id="next-month">&gt;</button>
+            </div>
+            <table id="calendar-table">
+                <thead>
+                    <tr>
+                        <th>Lun</th>
+                        <th>Mar</th>
+                        <th>Mié</th>
+                        <th>Jue</th>
+                        <th>Vie</th>
+                        <th>Sáb</th>
+                        <th>Dom</th>
+                    </tr>
+                </thead>
+                <tbody id="calendar-body">
+                    
+                </tbody>
+            </table>
+        </div>
+        <div class="task-input">
+            <h3>Tareas para <span id="selected-date">...</span></h3>
+            <textarea id="task-text" placeholder="Agrega una tarea"></textarea>
+            <button id="add-task-btn">Agregar tarea</button>
+            <div id="tasks-list">
+            </div>
+        </div>
+    </div>
+    <br><br><br><br><br>
+    <footer>
+        <div class="ff">
+            <p style="color: white;">&copy; 2024 Campus Digital - "Fundación especial: ayuda a los estudiantes con bajo intelecto donando". Coloca aquí tu Yape.</p>
+        </div>
+    </footer>c:\Users\Ves-Lab04\Downloads\cgi
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const calendarBody = document.getElementById("calendar-body");
+            const monthYearText = document.getElementById("month-year");
+            const selectedDateText = document.getElementById("selected-date");
+            const taskTextArea = document.getElementById("task-text");
+            const addTaskBtn = document.getElementById("add-task-btn");
+            const tasksList = document.getElementById("tasks-list");
+
+            let currentDate = new Date();
+            let currentMonth = currentDate.getMonth();
+            let currentYear = currentDate.getFullYear();
+            let selectedDate = null;
+
+            renderCalendar(currentMonth, currentYear);
+
+            function renderCalendar(month, year) {
+                calendarBody.innerHTML = "";
+
+                const firstDayOfMonth = new Date(year, month, 1);
+                const lastDayOfMonth = new Date(year, month + 1, 0);
+                const daysInMonth = lastDayOfMonth.getDate();
+                const startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; // Ajuste para que el lunes sea el primer día
+
+                const monthNames = [
+                    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+                ];
+                monthYearText.textContent = `${monthNames[month]} ${year}`;
+
+                let date = 1;
+                for (let i = 0; i < 6; i++) {
+                    const row = document.createElement("tr");
+
+                    for (let j = 0; j < 7; j++) {
+                        const cell = document.createElement("td");
+                        if (i === 0 && j < startDayOfWeek) {
+                            cell.textContent = "";
+                        } else if (date > daysInMonth) {
+                            break;
+                        } else {
+                            cell.textContent = date;
+                            const fullDate = new Date(year, month, date);
+                            cell.dataset.date = fullDate.toISOString().split("T")[0];
+                            cell.addEventListener("click", function() {
+                                selectDate(fullDate);
+                            });
+                            date++;
+                        }
+                        row.appendChild(cell);
+                    }
+
+                    calendarBody.appendChild(row);
+                }
+
+                selectDate(new Date(year, month, 1));
+            }
+
+            function selectDate(date) {
+                selectedDate = date;
+                selectedDateText.textContent = formatDate(date);
+                displayTasks(date.toISOString().split("T")[0]);
+            }
+
+            function formatDate(date) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('es-ES', options);
+            }
+
+            function displayTasks(date) {
+                const storedTasks = JSON.parse(localStorage.getItem("tasks")) || {};
+                const tasksForDate = storedTasks[date] || [];
+                tasksList.innerHTML = "";
+
+                tasksForDate.forEach((task, index) => {
+                    const taskItem = document.createElement("div");
+                    taskItem.classList.add("task-item");
+                    taskItem.textContent = task;
+
+                    const taskButtons = document.createElement("div");
+                    taskButtons.classList.add("task-buttons");
+
+                    const editBtn = document.createElement("button");
+                    editBtn.classList.add("edit-btn");
+                    editBtn.textContent = "Editar";
+                    editBtn.addEventListener("click", function() {
+                        editTask(date, index, taskItem);
+                    });
+
+                    const deleteBtn = document.createElement("button");
+                    deleteBtn.classList.add("delete-btn");
+                    deleteBtn.textContent = "Eliminar";
+                    deleteBtn.addEventListener("click", function() {
+                        deleteTask(date, index);
+                    });
+
+                    taskButtons.appendChild(editBtn);
+                    taskButtons.appendChild(deleteBtn);
+                    taskItem.appendChild(taskButtons);
+                    tasksList.appendChild(taskItem);
+                });
+            }
+
+            function editTask(date, index, taskItem) {
+                const taskText = prompt("Edita tu tarea:", taskItem.textContent);
+                if (taskText !== null && taskText.trim() !== "") {
+                    const storedTasks = JSON.parse(localStorage.getItem("tasks")) || {};
+                    storedTasks[date][index] = taskText.trim();
+                    localStorage.setItem("tasks", JSON.stringify(storedTasks));
+                    displayTasks(date);
+                }
+            }
+
+            function deleteTask(date, index) {
+                const storedTasks = JSON.parse(localStorage.getItem("tasks")) || {};
+                storedTasks[date].splice(index, 1);
+                if (storedTasks[date].length === 0) {
+                    delete storedTasks[date];
+                }
+                localStorage.setItem("tasks", JSON.stringify(storedTasks));
+                displayTasks(date);
+            }
+
+            addTaskBtn.addEventListener("click", function() {
+                const taskText = taskTextArea.value.trim();
+                if (taskText === "") return;
+
+                const dateKey = selectedDate.toISOString().split("T")[0];
+                const storedTasks = JSON.parse(localStorage.getItem("tasks")) || {};
+                if (!storedTasks[dateKey]) {
+                    storedTasks[dateKey] = [];
+                }
+                storedTasks[dateKey].push(taskText);
+                localStorage.setItem("tasks", JSON.stringify(storedTasks));
+
+                displayTasks(dateKey);
+                taskTextArea.value = "";
+            });
+
+            document.getElementById("prev-month").addEventListener("click", function() {
+                if (currentMonth === 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                } else {
+                    currentMonth--;
+                }
+                renderCalendar(currentMonth, currentYear);
+            });
+
+            document.getElementById("next-month").addEventListener("click", function() {
+                if (currentMonth === 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                } else {
+                    currentMonth++;
+                }
+                renderCalendar(currentMonth, currentYear);
+            });
+        });
+    </script>
+</body>
+</html>
+
+
